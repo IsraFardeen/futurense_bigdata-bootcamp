@@ -1,0 +1,14 @@
+#!/bin/bash
+echo "Enter no.of cities"
+read n
+a=0
+
+until [ ! $a -lt $n ]
+do
+echo "Enter city name"
+read city
+echo $city>>cities.txt
+a=`expr $a + 1`
+done
+cp cities.txt Old-cities.txt
+cat Old-cities.txt |grep New|sed -i 's/New/Old/g' Old-cities.txt>>Old-cities.txt

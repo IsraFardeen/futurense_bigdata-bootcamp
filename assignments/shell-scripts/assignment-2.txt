@@ -1,0 +1,19 @@
+#!/bin/bash
+echo "Enter no.of cities"
+read n
+a=0
+
+until [ ! $a -lt $n ]
+do
+echo "Enter city name"
+read city
+if [[ $city =~ [0-9] ]]; then
+echo "$city has numbers try again"
+else
+echo $city>>cities.txt
+a=`expr $a + 1`
+fi
+done
+cp cities2.txt Old-cities2.txt
+cat Old-cities2.txt |grep New|sed -i 's/New/Old/g' Old-cities2.txt>>Old-cities2.txt
+~
