@@ -1,0 +1,21 @@
+from pyspark import SparkContext
+from pyspark.sql import SparkSession
+from pyspark.sql.functions import *
+from pyspark.sql.types import *
+from pyspark.sql import *
+#import avro.schema
+#from avro.datafile import DataFileReader, DataFileWriter
+
+
+spark = SparkSession.builder.appName('pyspark-examples').getOrCreate()
+df1 = spark.read.format('csv').options(header=True,inferSchema=True).load('/home/isra/spark/bankmarketing/bank')
+#df1 = spark.read.format('csv').load("/home/isra/spark/bankmarketing/bankk",header=True,inferSchema=True)
+df1.createOrReplaceTempView("bank")
+category = spark.sql("select (case when age<13 then 'kids' when age<20 then 'teen' when age<31 then 'young' when age<50 then 'middleagers' else>#category.write.format("parquet").save("/home/isra/spark/bank.parquet")
+#newDf = spark.read.format("parquet").load("/home/isra/spark/bank.parquet")
+#newDf.show()
+
+
+sub1 = spark.sql("select (case when age<13 then 'kids' when age<20 then 'teen' when age<31 then 'young' when age<50 then 'middleagers' else 'ot>sub1.write.format("avro").save("/home/isra/spark/bankAvro")
+newDF2 = spark.read.format("avro").load("/home/isra/spark/bankAvro")
+newDF2.show()

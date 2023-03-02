@@ -1,0 +1,147 @@
+
+>>> df = spark.read.csv("file:///home/isra/futurense_hadoop-pyspark/labs/dataset/bankmarket/bankmarketdata.csv",sep=';',header = 'True',inferSchema='True')
+>>> df.printSchema()
+root
+ |-- age: integer (nullable = true)
+ |-- job: string (nullable = true)
+ |-- marital: string (nullable = true)
+ |-- education: string (nullable = true)
+ |-- default: string (nullable = true)
+ |-- balance: integer (nullable = true)
+ |-- housing: string (nullable = true)
+ |-- loan: string (nullable = true)
+ |-- contact: string (nullable = true)
+ |-- day: integer (nullable = true)
+ |-- month: string (nullable = true)
+ |-- duration: integer (nullable = true)
+ |-- campaign: integer (nullable = true)
+ |-- pdays: integer (nullable = true)
+ |-- previous: integer (nullable = true)
+ |-- poutcome: string (nullable = true)
+ |-- y: string (nullable = true)
+
+>>> df.show()
++---+------------+--------+---------+-------+-------+-------+----+-------+---+-----+--------+--------+-----+--------+--------+---+
+|age|         job| marital|education|default|balance|housing|loan|contact|day|month|duration|campaign|pdays|previous|poutcome|  y|
++---+------------+--------+---------+-------+-------+-------+----+-------+---+-----+--------+--------+-----+--------+--------+---+
+| 58|  management| married| tertiary|     no|   2143|    yes|  no|unknown|  5|  may|     261|       1|   -1|       0| unknown| no|
+| 44|  technician|  single|secondary|     no|     29|    yes|  no|unknown|  5|  may|     151|       1|   -1|       0| unknown| no|
+| 33|entrepreneur| married|secondary|     no|      2|    yes| yes|unknown|  5|  may|      76|       1|   -1|       0| unknown| no|
+| 47| blue-collar| married|  unknown|     no|   1506|    yes|  no|unknown|  5|  may|      92|       1|   -1|       0| unknown| no|
+| 33|     unknown|  single|  unknown|     no|      1|     no|  no|unknown|  5|  may|     198|       1|   -1|       0| unknown| no|
+| 35|  management| married| tertiary|     no|    231|    yes|  no|unknown|  5|  may|     139|       1|   -1|       0| unknown| no|
+| 28|  management|  single| tertiary|     no|    447|    yes| yes|unknown|  5|  may|     217|       1|   -1|       0| unknown| no|
+| 42|entrepreneur|divorced| tertiary|    yes|      2|    yes|  no|unknown|  5|  may|     380|       1|   -1|       0| unknown| no|
+
+df.show(5)
+
+>>> df.createOrReplaceTempView('bankmarketing')
+>>> spark.sql('select count(*) from bankmarketing').show()
++--------+
+|count(1)|
++--------+
+|   45211|
++--------+
+
+
+>>> spark.sql("select (sum(if(Y='yes',1,0))/count(*))*100 from bankmarketing").show()
++-----------------------------------------------+
+|((sum((IF((Y = yes), 1, 0))) / count(1)) * 100)|
++-----------------------------------------------+
+|                             11.698480458295547|
++-----------------------------------------------+
+
+>>> spark.sql("select (sum(if(Y!='yes',1,0))/count(*))*100 from bankmarketing").show()
++-----------------------------------------------------+
+|((sum((IF((NOT (Y = yes)), 1, 0))) / count(1)) * 100)|
++-----------------------------------------------------+
+|                                    88.30151954170445|
++-----------------------------------------------------+
+
+>>> spark.sql("select max(age),min(age),avg(age) from bankmarketing").show()
++--------+--------+-----------------+
+|max(age)|min(age)|         avg(age)|
++--------+--------+-----------------+
+|      95|      18|40.93621021432837|
++--------+--------+-----------------+
+
+>>> spark.sql("select avg(balance),percentile_approx(balance,0.5) as MediumBalance from bankmarketing").show()
++------------------+-------------+
+|      avg(balance)|MediumBalance|
++------------------+-------------+
+|1362.2720576850766|          448|
++------------------+-------------+
+
+>>> spark.sql("select age,count(*) as cnt from bankmarketing where y = 'yes' group by age order by cnt desc").show()
++---+---+
+|age|cnt|
++---+---+
+| 32|221|
+| 30|217|
+| 33|210|
+| 35|209|
+| 31|206|
+| 34|198|
+| 36|195|
+| 29|171|
+| 37|170|
+| 28|162|
+| 38|144|
+| 39|143|
+| 27|141|
+| 26|134|
+| 41|120|
+| 46|118|
+| 40|116|
+| 47|113|
+| 25|113|
+| 42|111|
++---+---+
+only showing top 20 rows
+
+>>> spark.sql("select marital,count(*) as cnt from bankmarketing where y = 'yes' group by marital order by cnt desc").show()
++--------+----+
+| marital| cnt|
++--------+----+
+| married|2755|
+|  single|1912|
+|divorced| 622|
++--------+----+
+
+>>> spark.sql("select (case when age<13 then 'kids' when age<20 then 'teen' when age<31 then 'young' when age<50 then 'middleagers' else 'others' end) as agegrp,count(*) as cnt from bankmarketing where y = 'yes' group by agegrp order by cnt desc").show()
++-----------+----+
+|     agegrp| cnt|
++-----------+----+
+|middleagers|2759|
+|     others|1385|
+|      young|1127|
+|       teen|  18|
++-----------+----+
+
+
+>>> spark.sql("select marital,age,count(*) as cnt from bankmarketing where y = 'yes' group by marital,age order by cnt desc").show()
++-------+---+---+
+|marital|age|cnt|
++-------+---+---+
+| single| 30|151|
+| single| 28|138|
+| single| 29|133|
+| single| 32|124|
+| single| 26|121|
+|married| 34|118|
+| single| 31|111|
+| single| 27|110|
+|married| 35|101|
+|married| 36|100|
+| single| 25| 99|
+|married| 37| 98|
+|married| 33| 97|
+| single| 33| 97|
+|married| 39| 87|
+|married| 32| 87|
+|married| 38| 86|
+| single| 35| 84|
+|married| 47| 83|
+|married| 46| 80|
++-------+---+---+
+only showing top 20 rows
